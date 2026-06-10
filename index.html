@@ -214,7 +214,39 @@
     </div>
   </form>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      setPersistence,
+      browserLocalPersistence,
+      browserSessionPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBVjIS25P3ihP9QjIAoENdDgylbZf0pg38",
+  authDomain: "school-1fe57.firebaseapp.com",
+  projectId: "school-1fe57",
+  storageBucket: "school-1fe57.firebasestorage.app",
+  messagingSenderId: "590985630383",
+  appId: "1:590985630383:web:70e3bd527c32b4b9e87a5a",
+  measurementId: "G-2LPW5Y9QSH"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
     const form = document.getElementById("loginForm");
     const usuario = document.getElementById("usuario");
     const password = document.getElementById("password");
@@ -223,9 +255,7 @@
     const alertBox = document.getElementById("alert");
     const btnLogin = document.getElementById("btnLogin");
     const togglePassword = document.getElementById("togglePassword");
-
-    const usuarioCorrecto = "1087812026";
-    const passwordCorrecta = "123456";
+    const remember = document.getElementById("remember");
 
     togglePassword.addEventListener("click", () => {
       if (password.type === "password") {
@@ -237,7 +267,7 @@
       }
     });
 
-    form.addEventListener("submit", function(event) {
+    form.addEventListener("submit", async function(event) {
       event.preventDefault();
 
       limpiarErrores();
@@ -271,23 +301,57 @@
       btnLogin.disabled = true;
       btnLogin.textContent = "Verificando...";
 
-      setTimeout(() => {
-        if (usuarioValue === usuarioCorrecto && passwordValue === passwordCorrecta) {
-          mostrarAlerta("Ingreso exitoso. Redirigiendo...", "success");
+      try {
+        await setPersistence(
+          auth,
+          remember.checked ? browserLocalPersistence : browserSessionPersistence
+        );
 
-          setTimeout(() => {
-            window.location.href = "dashboard.html";
-          }, 1000);
+        const loginRef = doc(db, "loginUsuarios", usuarioValue);
+        const loginSnap = await getDoc(loginRef);
 
-        } else {
-          mostrarAlerta("Usuario o contraseña incorrectos.", "error");
-          password.value = "";
-          password.focus();
-          btnLogin.disabled = false;
-          btnLogin.textContent = "Entrar";
+        if (!loginSnap.exists()) {
+          throw new Error("usuario-no-registrado");
         }
-      }, 800);
+
+        const correo = loginSnap.data().correo;
+
+        await signInWithEmailAndPassword(auth, correo, passwordValue);
+
+        mostrarAlerta("Ingreso exitoso. Redirigiendo...", "success");
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 800);
+
+      } catch (error) {
+        mostrarAlerta(obtenerMensajeError(error), "error");
+        password.value = "";
+        password.focus();
+        btnLogin.disabled = false;
+        btnLogin.textContent = "Entrar";
+      }
     });
+
+    function obtenerMensajeError(error) {
+      if (error.message === "usuario-no-registrado") {
+        return "Ese usuario no está registrado.";
+      }
+
+      switch (error.code) {
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+          return "Usuario o contraseña incorrectos.";
+        case "permission-denied":
+          return "Firebase no permite leer el usuario. Revisa las reglas de Firestore.";
+        case "unavailable":
+          return "No hay conexión con Firebase. Revisa internet.";
+        default:
+          console.error(error);
+          return "No se pudo iniciar sesión. Revisa Firebase y vuelve a intentar.";
+      }
+    }
 
     function mostrarError(input, contenedor, mensaje) {
       input.classList.add("error-input");
@@ -308,6 +372,5 @@
       alertBox.className = "alert " + tipo;
     }
   </script>
-
 </body>
 </html>
