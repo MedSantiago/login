@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
+  <title>Login Completo</title>
   <style>
     * {
       box-sizing: border-box;
@@ -16,75 +16,87 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, #151515, #3a0ca3, #4361ee);
-      overflow: hidden;
-    }
-
-    .login-card {
-      width: 360px;
-      padding: 35px;
-      border-radius: 24px;
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(135deg, #111827, #3b0764, #2563eb);
       color: white;
-      animation: appear 0.7s ease;
     }
 
-    @keyframes appear {
-      from {
-        opacity: 0;
-        transform: translateY(25px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .card {
+      width: 380px;
+      padding: 32px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.13);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 25px 70px rgba(0,0,0,.4);
     }
 
-    .login-card h1 {
+    h1 {
       text-align: center;
-      margin-bottom: 10px;
-      font-size: 2rem;
+      margin-bottom: 8px;
     }
 
-    .login-card p {
+    .subtitle {
       text-align: center;
-      margin-bottom: 30px;
-      color: #e0e0e0;
+      color: #ddd;
+      margin-bottom: 28px;
     }
 
-    .input-group {
-      margin-bottom: 18px;
+    .group {
+      margin-bottom: 16px;
     }
 
-    .input-group label {
+    label {
       display: block;
       margin-bottom: 7px;
-      font-size: 0.9rem;
+      font-size: 14px;
     }
 
-    .input-group input {
+    input {
       width: 100%;
-      padding: 13px 15px;
-      border: none;
-      outline: none;
+      padding: 13px 14px;
+      border: 1px solid transparent;
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255,255,255,.2);
       color: white;
-      font-size: 1rem;
+      outline: none;
+      font-size: 15px;
     }
 
-    .input-group input::placeholder {
-      color: #d6d6d6;
+    input::placeholder {
+      color: #ccc;
+    }
+
+    input.error {
+      border-color: #ff6b6b;
+      background: rgba(255, 0, 0, 0.12);
+    }
+
+    .error-text {
+      margin-top: 6px;
+      color: #ffb4b4;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    .password-box {
+      position: relative;
+    }
+
+    .toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 13px;
+      color: #caf0f8;
+      user-select: none;
     }
 
     .options {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      margin-bottom: 25px;
+      font-size: 14px;
+      margin: 12px 0 22px;
     }
 
     .options a {
@@ -97,60 +109,202 @@
       padding: 14px;
       border: none;
       border-radius: 16px;
-      background: linear-gradient(135deg, #4cc9f0, #7209b7);
+      background: linear-gradient(135deg, #22d3ee, #7c3aed);
       color: white;
-      font-weight: 700;
-      font-size: 1rem;
+      font-weight: 800;
+      font-size: 16px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: 0.2s;
     }
 
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(76, 201, 240, 0.35);
+      box-shadow: 0 12px 26px rgba(34, 211, 238, .3);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert {
+      display: none;
+      margin-bottom: 18px;
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .alert.error {
+      display: block;
+      background: rgba(255, 77, 77, 0.18);
+      color: #ffd1d1;
+      border: 1px solid rgba(255, 77, 77, .4);
+    }
+
+    .alert.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.18);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, .4);
     }
 
     .register {
       text-align: center;
       margin-top: 22px;
-      font-size: 0.9rem;
+      font-size: 14px;
     }
 
     .register a {
       color: #caf0f8;
-      text-decoration: none;
       font-weight: 700;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <form class="login-card">
-    <h1>Bienvenido</h1>
-    <p>Entra a tu cuenta sin drama</p>
 
-    <div class="input-group">
-      <label for="email">Correo</label>
-      <input type="email" id="email" placeholder="laisecasantiago8@gmail.com" required />
+  <form class="card" id="loginForm">
+    <h1>Bienvenido</h1>
+    <p class="subtitle">Inicia sesión con estilo</p>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="group">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="usuario@email.com" />
+      <div class="error-text" id="emailError"></div>
     </div>
 
-    <div class="input-group">
+    <div class="group">
       <label for="password">Contraseña</label>
-      <input type="password" id="password" placeholder="12345" required />
+      <div class="password-box">
+        <input type="password" id="password" placeholder="Mínimo 6 caracteres" />
+        <span class="toggle" id="togglePassword">Ver</span>
+      </div>
+      <div class="error-text" id="passwordError"></div>
     </div>
 
     <div class="options">
       <label>
-        <input type="checkbox" />
+        <input type="checkbox" id="remember" />
         Recordarme
       </label>
-      <a href="#">¿Olvidaste?</a>
+      <a href="#">¿Olvidaste tu contraseña?</a>
     </div>
 
-    <button type="submit">Iniciar sesión</button>
+    <button type="submit" id="btnLogin">Iniciar sesión</button>
 
     <div class="register">
       ¿No tienes cuenta? <a href="#">Regístrate</a>
     </div>
   </form>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const emailError = document.getElementById("emailError");
+    const passwordError = document.getElementById("passwordError");
+    const alertBox = document.getElementById("alert");
+    const btnLogin = document.getElementById("btnLogin");
+    const togglePassword = document.getElementById("togglePassword");
+
+    // Usuario válido de prueba
+    const userCorrecto = {
+      email: "admin@email.com",
+      password: "123456"
+    };
+
+    togglePassword.addEventListener("click", () => {
+      if (password.type === "password") {
+        password.type = "text";
+        togglePassword.textContent = "Ocultar";
+      } else {
+        password.type = "password";
+        togglePassword.textContent = "Ver";
+      }
+    });
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      limpiarErrores();
+
+      const emailValue = email.value.trim();
+      const passwordValue = password.value.trim();
+
+      let hayError = false;
+
+      if (emailValue === "") {
+        mostrarError(email, emailError, "El correo es obligatorio.");
+        hayError = true;
+      } else if (!validarEmail(emailValue)) {
+        mostrarError(email, emailError, "Escribe un correo válido.");
+        hayError = true;
+      }
+
+      if (passwordValue === "") {
+        mostrarError(password, passwordError, "La contraseña es obligatoria.");
+        hayError = true;
+      } else if (passwordValue.length < 6) {
+        mostrarError(password, passwordError, "La contraseña debe tener mínimo 6 caracteres.");
+        hayError = true;
+      }
+
+      if (hayError) return;
+
+      btnLogin.disabled = true;
+      btnLogin.textContent = "Verificando...";
+
+      setTimeout(() => {
+        if (
+          emailValue === userCorrecto.email &&
+          passwordValue === userCorrecto.password
+        ) {
+          mostrarAlerta("Inicio de sesión exitoso. Bienvenido, crack.", "success");
+          btnLogin.textContent = "Entrando...";
+
+          setTimeout(() => {
+            window.location.href = "#dashboard";
+          }, 1000);
+
+        } else {
+          mostrarAlerta("Correo o contraseña incorrectos. Intenta nuevamente.", "error");
+          password.value = "";
+          password.focus();
+          btnLogin.disabled = false;
+          btnLogin.textContent = "Iniciar sesión";
+        }
+      }, 900);
+    });
+
+    function validarEmail(valor) {
+      const regex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+      return regex.test(valor);
+    }
+
+    function mostrarError(input, contenedor, mensaje) {
+      input.classList.add("error");
+      contenedor.textContent = mensaje;
+    }
+
+    function limpiarErrores() {
+      email.classList.remove("error");
+      password.classList.remove("error");
+      emailError.textContent = "";
+      passwordError.textContent = "";
+      alertBox.className = "alert";
+      alertBox.textContent = "";
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+      alertBox.textContent = mensaje;
+      alertBox.className = "alert " + tipo;
+    }
+  </script>
+
 </body>
 </html>
